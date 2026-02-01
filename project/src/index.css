@@ -147,3 +147,35 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(31, 111, 235, 0.5);
 }
+
+.study-output {
+  font-family: "Segoe UI", Arial, sans-serif;
+  line-height: 1.7;
+  color: #2c2c2c;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.study-output h1,
+.study-output h2,
+.study-output strong {
+  color: #1e40af;
+  font-size: 22px;
+  margin-top: 20px;
+}
+
+.study-output p {
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+.study-output ul {
+  margin-left: 20px;
+}
+
+.study-output li {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
