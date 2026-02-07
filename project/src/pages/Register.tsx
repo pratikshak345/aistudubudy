@@ -1,153 +1,27 @@
-import { API_BASE_URL } from "../config";
-import { useState } from 'react';
-import axios from 'axios';
-import { ArrowLeft, Mail, Lock, User } from 'lucide-react';
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage(null);
+  setIsError(false);
 
-interface RegisterProps {
-  onNavigate: (page: string) => void;
-}
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/register`, {
+      name,
+      email,
+      password,
+    });
 
-export default function Register({ onNavigate }: RegisterProps) {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [isError, setIsError] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
+    setMessage(res.data.message || 'Registration successful.');
     setIsError(false);
 
-    try {
-      const res = await axios.post(`${API_BASE_URL}/api/register`, {
-        name,
-        email,
-        password,
-      });
-      
-
-      setMessage(res.data.message || 'Registration successful.');
-      setIsError(false);
-
-       // Navigate to home on successful registration
-       onNavigate('home');
-    } catch (error: any) {
-      const errMsg =
-        error?.response?.data?.message ||
-        'Unable to register. Please check your details and try again.';
-      setMessage(errMsg);
-      setIsError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-[calc(100vh-64px)] page-transition py-12">
-      <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
-        <button
-          onClick={() => onNavigate('home')}
-          className="flex items-center text-gray-400 hover:text-white transition-colors mb-8 group"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Back to Home
-        </button>
-
-        <div className="card-premium rounded-2xl p-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
-          <p className="text-gray-400 mb-8">
-            Sign up to save your progress and access all AI Study Buddy tools.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Name
-              </label>
-              <div className="relative">
-                <User className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full pl-10 pr-4 py-3 bg-[#0D1117] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1F6FEB] focus:border-transparent transition-all hover:border-gray-600"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full pl-10 pr-4 py-3 bg-[#0D1117] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1F6FEB] focus:border-transparent transition-all hover:border-gray-600"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a strong password"
-                  className="w-full pl-10 pr-4 py-3 bg-[#0D1117] border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1F6FEB] focus:border-transparent transition-all hover:border-gray-600"
-                  required
-                  minLength={6}
-                />
-              </div>
-            </div>
-
-            {message && (
-              <div
-                className={`text-sm rounded-lg px-4 py-3 ${
-                  isError
-                    ? 'bg-red-500/10 text-red-400 border border-red-500/40'
-                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/40'
-                }`}
-              >
-                {message}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="button-premium w-full px-6 py-3 bg-gradient-to-r from-[#1F6FEB] to-[#58A6FF] text-white rounded-xl font-semibold text-lg transition-all hover:shadow-2xl hover:shadow-[#1F6FEB]/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-            >
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </button>
-          </form>
-
-          <p className="mt-6 text-sm text-gray-400 text-center">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={() => onNavigate('login')}
-              className="text-[#58A6FF] hover:text-[#7d5ff5] font-medium"
-            >
-              Login
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+    onNavigate('home');
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message ||
+      'Unable to register. Please check your details and try again.';
+    setMessage(errMsg);
+    setIsError(true);
+  } finally {
+    setLoading(false);
+  }
+};
