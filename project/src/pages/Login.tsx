@@ -19,17 +19,16 @@ export default function Login({ onNavigate }: LoginProps) {
     setLoading(true);
     setMessage(null);
     setIsError(false);
-
+  
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/register`,
-      {
+      const res = await axios.post(`${API_BASE_URL}/api/login`, {
         email,
         password,
       });
+  
       setMessage(res.data.message || 'Login successful.');
       setIsError(false);
-
-      // Navigate to home on successful login
+  
       onNavigate('home');
     } catch (error: any) {
       const errMsg =
@@ -41,6 +40,7 @@ export default function Login({ onNavigate }: LoginProps) {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-[calc(100vh-64px)] page-transition py-12">

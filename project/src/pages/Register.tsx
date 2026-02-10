@@ -1,3 +1,14 @@
+import { API_BASE_URL } from "../config";
+import { useState } from "react";
+import axios from "axios";
+import { ArrowLeft, Mail, Lock, User } from "lucide-react";
+
+interface RegisterProps {
+  onNavigate: (page: string) => void;
+}
+
+function Register({ onNavigate }: RegisterProps) {
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
@@ -25,3 +36,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     setLoading(false);
   }
 };
+}
+
+export default Register;
+
