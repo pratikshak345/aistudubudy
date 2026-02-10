@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
@@ -19,7 +20,8 @@ export default function Output({ data }: OutputProps) {
     const fetchData = async () => {
       try {
         const response = await axios.post(
-          `http://127.0.0.1:5000/api/${data.mode}`, // ✅ FIXED
+          `${API_BASE_URL}/api/${data.mode}`,
+         // ✅ FIXED
           {
             topic: data.topic,
             notes: data.notes || "",

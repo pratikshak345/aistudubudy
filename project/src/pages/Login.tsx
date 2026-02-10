@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../config";
 import { useState } from 'react';
 import axios from 'axios';
 import { ArrowLeft, Lock, Mail } from 'lucide-react';
@@ -20,7 +21,8 @@ export default function Login({ onNavigate }: LoginProps) {
     setIsError(false);
 
     try {
-      const res = await axios.post('http://127.0.0.1:5000/api/login', {
+      const res = await axios.post(`${API_BASE_URL}/api/register`,
+      {
         email,
         password,
       });
