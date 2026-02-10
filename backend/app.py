@@ -7,10 +7,9 @@ from groq import Groq
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:5173",
-    "https://aistudubudy.netlify.app"
-])
+
+CORS(app, supports_credentials=True)
+
 
 
 # Groq client
