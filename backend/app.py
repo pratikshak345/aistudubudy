@@ -8,10 +8,16 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, origins=[
-    "http://localhost:5173",
-    "https://your-netlify-name.netlify.app"
-])
+CORS(
+    app,
+    resources={r"/api/*": {
+        "origins": [
+            "http://localhost:5173",
+            "https://aistudubudy.netlify.app"
+        ]
+    }},
+    supports_credentials=True
+)
 
 
 
