@@ -123,3 +123,46 @@ def quiz():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
+# Simple in-memory user storage (demo only)
+users = {}
+
+@app.route("/api/register", methods=["POST"])
+def register():
+    data = request.get_json() or {}
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+
+    if not email or not password:
+        return jsonify({"success": False, "message": "Email and password required"}), 400
+
+    if email in users:
+        return jsonify({"success": False, "message": "User already exists"}), 400
+
+    users[email] = {
+        "name": name or email.split("@")[0],
+        "password": password
+    }
+
+    return jsonify({
+        "success": True,
+        "message": "Registration successful"
+    })
+
+
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.get_json() or {}
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+
+    user = users.get(email)
+
+    if not user or user["password"] != password:
+        return jsonify({"success": False, "message": "Invalid credentials"}), 401
+
+    return jsonify({
+        "success": True,
+        "message": "Login successful"
+    })
