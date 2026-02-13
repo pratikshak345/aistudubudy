@@ -8,12 +8,22 @@ load_dotenv()
 
 app = Flask(__name__)
 
-CORS(app, supports_credentials=True)
+CORS(app, origins=[
+    "http://localhost:5173",
+    "https://your-netlify-name.netlify.app"
+])
+
 
 
 
 # Groq client
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
+if not GROQ_API_KEY:
+    raise RuntimeError("GROQ_API_KEY not found in environment variables")
+
+client = Groq(api_key=GROQ_API_KEY)
+
 
 
 @app.route("/api/health", methods=["GET"])
@@ -105,4 +115,5 @@ def quiz():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
