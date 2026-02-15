@@ -120,13 +120,6 @@ def quiz():
         }), 200
 
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
-
-# Simple in-memory user storage (demo only)
-users = {}
-
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json() or {}
@@ -166,3 +159,10 @@ def login():
         "success": True,
         "message": "Login successful"
     })
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+# Simple in-memory user storage (demo only)
+users = {}
