@@ -8,6 +8,8 @@ load_dotenv()
 
 app = Flask(__name__)
 
+users = {}
+
 CORS(
     app,
     resources={r"/api/*": {
@@ -122,7 +124,7 @@ def quiz():
 
 @app.route("/api/register", methods=["POST"])
 def register():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     name = data.get("name", "").strip()
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
@@ -146,8 +148,8 @@ def register():
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
-    email = data.get("email", "").strip().lower()
+   data = request.get_json(silent=True) or {}
+   email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
     user = users.get(email)
@@ -165,4 +167,3 @@ if __name__ == "__main__":
     app.run(host="0.0.0.0", port=port)
 
 # Simple in-memory user storage (demo only)
-users = {}
