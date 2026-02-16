@@ -1,14 +1,33 @@
 from dotenv import load_dotenv
 import os
 from flask import Flask, request, jsonify
+import sqlite3
 from flask_cors import CORS
 from groq import Groq
 
 load_dotenv()
 
 app = Flask(__name__)
+def get_db():
+    conn = sqlite3.connect("users.db")
+    conn.row_factory = sqlite3.Row
+    return conn
+def init_db():
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE,
+            password TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-users = {}
+init_db()
+
+
 
 CORS(
     app,
@@ -121,7 +140,6 @@ def quiz():
             "result": f"AI Error: {str(e)}"
         }), 200
 
-
 @app.route("/api/register", methods=["POST"])
 def register():
     data = request.get_json(silent=True) or {}
@@ -132,35 +150,39 @@ def register():
     if not email or not password:
         return jsonify({"success": False, "message": "Email and password required"}), 400
 
-    if email in users:
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+            (name, email, password)
+        )
+        conn.commit()
+    except sqlite3.IntegrityError:
         return jsonify({"success": False, "message": "User already exists"}), 400
+    finally:
+        conn.close()
 
-    users[email] = {
-        "name": name or email.split("@")[0],
-        "password": password
-    }
+    return jsonify({"success": True, "message": "Registration successful"})
 
-    return jsonify({
-        "success": True,
-        "message": "Registration successful"
-    })
 
 
 @app.route("/api/login", methods=["POST"])
 def login():
-    data = request.get_json() or {}
+    data = request.get_json(silent=True) or {}
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
-    user = users.get(email)
+    conn = get_db()
+    user = conn.execute(
+        "SELECT * FROM users WHERE email=? AND password=?",
+        (email, password)
+    ).fetchone()
+    conn.close()
 
-    if not user or user["password"] != password:
+    if not user:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
-    return jsonify({
-        "success": True,
-        "message": "Login successful"
-    })
+    return jsonify({"success": True, "message": "Login successful"})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
