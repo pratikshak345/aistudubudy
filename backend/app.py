@@ -1,34 +1,21 @@
+from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
 from flask import Flask, request, jsonify
-import sqlite3
 from flask_cors import CORS
 from groq import Groq
 
 load_dotenv()
 
 app = Flask(__name__)
-def get_db():
-    conn = sqlite3.connect("users.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-def init_db():
-    conn = get_db()
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            email TEXT UNIQUE,
-            password TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+MONGO_URI = os.getenv("MONGO_URI")
 
-init_db()
+if not MONGO_URI:
+    raise RuntimeError("MONGO_URI not found in environment variables")
 
-
-
+mongo_client = MongoClient(MONGO_URI)
+db = mongo_client["aistudubudy"]
+users_collection = db["users"]
 CORS(
     app,
     resources={r"/api/*": {
@@ -49,7 +36,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise RuntimeError("GROQ_API_KEY not found in environment variables")
 
-client = Groq(api_key=GROQ_API_KEY)
+groq_client = Groq(api_key=GROQ_API_KEY)
 
 
 
@@ -61,11 +48,11 @@ def health():
 @app.route("/api/explain", methods=["POST"])
 def explain():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         topic = data.get("topic", "")
         notes = data.get("notes", "")
 
-        response = client.chat.completions.create(
+        response = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": "You are a helpful study assistant."},
@@ -89,11 +76,11 @@ def explain():
 @app.route("/api/summarize", methods=["POST"])
 def summarize():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         topic = data.get("topic", "")
         notes = data.get("notes", "")
 
-        response = client.chat.completions.create(
+        response = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": "You summarize notes for students."},
@@ -117,10 +104,10 @@ def summarize():
 @app.route("/api/quiz", methods=["POST"])
 def quiz():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         topic = data.get("topic", "")
 
-        response = client.chat.completions.create(
+        response = groq_client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
                 {"role": "system", "content": "You generate quizzes for learning."},
@@ -150,20 +137,17 @@ def register():
     if not email or not password:
         return jsonify({"success": False, "message": "Email and password required"}), 400
 
-    conn = get_db()
-    try:
-        conn.execute(
-            "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-            (name, email, password)
-        )
-        conn.commit()
-    except sqlite3.IntegrityError:
+    existing_user = users_collection.find_one({"email": email})
+    if existing_user:
         return jsonify({"success": False, "message": "User already exists"}), 400
-    finally:
-        conn.close()
+
+    users_collection.insert_one({
+        "name": name,
+        "email": email,
+        "password": password
+    })
 
     return jsonify({"success": True, "message": "Registration successful"})
-
 
 
 @app.route("/api/login", methods=["POST"])
@@ -172,12 +156,10 @@ def login():
     email = data.get("email", "").strip().lower()
     password = data.get("password", "").strip()
 
-    conn = get_db()
-    user = conn.execute(
-        "SELECT * FROM users WHERE email=? AND password=?",
-        (email, password)
-    ).fetchone()
-    conn.close()
+    user = users_collection.find_one({
+        "email": email,
+        "password": password
+    })
 
     if not user:
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
@@ -188,4 +170,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
-# Simple in-memory user storage (demo only)
+
