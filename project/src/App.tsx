@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
 import Tools from './pages/Tools';
@@ -6,51 +6,71 @@ import Input from './pages/Input';
 import Output from './pages/Output';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import History from "./pages/History";
 
-type Page = 'home' | 'tools' | 'input' | 'output' | 'login' | 'register';
+type Page = 'home' | 'tools' | 'input' | 'output' | 'login' | 'register' | 'history';
 type Mode = 'explain' | 'summarize' | 'quiz';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [currentPage, setCurrentPage] = useState<Page>('login');
   const [selectedMode, setSelectedMode] = useState<Mode>('explain');
-  const [inputData, setInputData] = useState<{
-    topic: string;
-    notes: string;
-    mode: Mode;
-  }>({
+
+  const [inputData, setInputData] = useState({
     topic: '',
     notes: '',
-    mode: 'explain'
+    mode: 'explain' as Mode
   });
+
+  // URL detection
+  useEffect(() => {
+    const path = window.location.pathname.replace("/", "");
+  
+    if (path === "login") setCurrentPage("login");
+    else if (path === "register") setCurrentPage("register");
+    else if (path === "tools") setCurrentPage("tools");
+    else if (path === "history") setCurrentPage("history");
+    else setCurrentPage("login");
+  }, []);
+
+  const navigate = (page: string) => {
+    window.history.pushState({}, "", "/" + page);
+    setCurrentPage(page as Page);
+  };
 
   return (
     <div className="min-h-screen bg-[#0D1117]">
-      <Navigation
-        currentPage={currentPage}
-        onNavigate={(page: string) => setCurrentPage(page as Page)}
-      />
+
+      {/* Hide Navbar on Login & Register */}
+      {currentPage !== "login" && currentPage !== "register" && (
+        <Navigation
+          currentPage={currentPage}
+          onNavigate={navigate}
+        />
+      )}
 
       {currentPage === 'home' && (
-        <Home onNavigate={(page: string) => setCurrentPage(page as Page)} />
+        <Home onNavigate={navigate} />
       )}
+
       {currentPage === 'tools' && (
         <Tools
-          onNavigate={(page: string) => setCurrentPage(page as Page)}
+          onNavigate={navigate}
           onSelectTool={setSelectedMode}
         />
       )}
+
       {currentPage === 'login' && (
-        <Login onNavigate={(page: string) => setCurrentPage(page as Page)} />
+        <Login onNavigate={navigate} />
       )}
+
       {currentPage === 'register' && (
-        <Register
-          onNavigate={(page: string) => setCurrentPage(page as Page)}
-        />
+        <Register onNavigate={navigate} />
       )}
+
       {currentPage === 'input' && (
         <Input
           selectedMode={selectedMode}
-          onNavigate={(page: string) => setCurrentPage(page as Page)}
+          onNavigate={navigate}
           onSubmit={(data) =>
             setInputData({
               topic: data.topic,
@@ -60,12 +80,17 @@ function App() {
           }
         />
       )}
+
       {currentPage === 'output' && (
         <Output
           data={inputData}
-          onNavigate={(page: string) => setCurrentPage(page as Page)}
+          onNavigate={navigate}
         />
       )}
+      {currentPage === "history" && (
+  <History />
+)}
+
     </div>
   );
 }

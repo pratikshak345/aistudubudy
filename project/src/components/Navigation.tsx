@@ -44,6 +44,12 @@ export default function Navigation({ currentPage, onNavigate }: NavigationProps)
               Tools
             </button>
             <button
+  onClick={() => onNavigate("history")}
+  className="text-gray-300 hover:text-white"
+>
+  History
+</button>
+            <button
               onClick={() => onNavigate('login')}
               className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
             >
