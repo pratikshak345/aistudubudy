@@ -33,6 +33,7 @@ CORS(
         r"/api/*": {
             "origins": [
                 "http://localhost:5173",
+                "https://aistudubudy.vercel.app",
                 "https://aistudubudy.netlify.app"
             ]
         }
